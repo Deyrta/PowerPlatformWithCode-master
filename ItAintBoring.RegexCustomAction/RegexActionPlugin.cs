@@ -31,17 +31,29 @@ namespace RegexCustomAction
                 var regex = new Regex(pattern);
                 var matches = regex.Matches(data);
                 string address = "";
+                int s = 0;
                 foreach(Match match in matches)
                 {
+                    if (s == 0) { s++;continue; }
                     address = match.Value;
-                    break;
                 }
                 var splitedAddress = address.Split('\n');
-                street = splitedAddress[4];
+                string[] clearAddress = new string[2];
+                int count = 0;
+                for (int j = 0; j < splitedAddress.Length; j++)
+                {
+                    if (splitedAddress[j].Length != 0 && splitedAddress[j] != "Anschrift")
+                    {
+                        clearAddress[count] = splitedAddress[j];
+                        count++;
+                    }
+
+                }
+                city = clearAddress[0];
                 for (int i = 0; i < 5; i++)
-                    postalCode += splitedAddress[6][i];
-                for (int i = 6; i < splitedAddress[6].Length; i++)
-                    city += splitedAddress[6][i];
+                    postalCode += clearAddress[1][i];
+                for (int i = 6; i < clearAddress[1].Length; i++)
+                    street += clearAddress[1][i];
             }
             context.OutputParameters["Street"] = street;
             context.OutputParameters["PostalCode"] = postalCode;
