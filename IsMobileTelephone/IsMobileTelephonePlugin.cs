@@ -20,33 +20,43 @@ namespace IsMobileTelephone
 
             bool type = false;
             string data = "";
-            if (context.InputParameters.Contains("Pattern") &&
-                context.InputParameters.Contains("Data"))
+            if (context.InputParameters.Contains("Data"))
             {
-                string pattern = (string)context.InputParameters["Pattern"];
                 data = (string)context.InputParameters["Data"];
 
-                var regex = new Regex(pattern);
-                var matches = regex.Matches(data);
-                type = matches.Count != 0 ? true : false;
-
+                data = FormatText(data);
+                if (data.StartsWith("0") && !data.StartsWith("00"))
+                {
+                    string tempData = "+49";
+                    for (int i = 1; i < data.Length; i++)
+                        tempData += data[i];
+                    data = tempData;
+                }
+                if (!data.StartsWith("0") && !data.StartsWith("00") && !data.StartsWith("+"))
+                {
+                    string temptData = "+49";
+                    data = temptData + data;
+                }
+                if(data.StartsWith("00"))
+                {
+                    string tempData = "+";
+                    for (int i = 2; i < data.Length; i++)
+                        tempData += data[i];
+                    data = tempData;
+                }
+                //   s
+                type = (data.StartsWith("+4915") || data.StartsWith("+4916") || data.StartsWith("+4917")) ? true : false;
             }
+
             context.OutputParameters["Type"] = type;
-            context.OutputParameters["FormatedNumber"] = FormatText(String.Concat(data.Where(c => !Char.IsWhiteSpace(c))));
+            context.OutputParameters["FormatedNumber"] = data;
         }
         private string FormatText(string text)
         {
-            text = text.Contains("00") ? text.Replace("00", "+") : text;
-            string formatedText = "";
-            for (int i = 0; i < text.Length; i++)
-            {
-                if (i == 3)
-                    formatedText += '(';
-                formatedText += text[i];
-                if (i == 5)
-                    formatedText += ')';
-            }
-            return formatedText;
+            char[] symbolsToDelete = { ' ', '\\', '/', '-', '_', '(' , ')', '.'};
+            foreach (char c in symbolsToDelete) { text = text.Replace(c, ' '); }
+            text = String.Concat(text.Where(c => !Char.IsWhiteSpace(c)));
+            return text;
         }
     }
 }
